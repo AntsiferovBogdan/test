@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12"><h1 align="center">{{ title_reg }} </h1></div>
+</div>
+<div class="row">
+    <div class="col-4"></div>
+    <div class="col-4">
+        <form action="{{ url_for('user.process_registration') }}" method="post" enctype=multipart/form-data>
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.surname.label }}<br>
+                {{ form.surname() }}
+            </div>
+            <div class="form-group">
+                {{ form.name.label }}<br>
+                {{ form.name() }}
+            </div>
+            <div class="form-group">
+                {{ form.middle_name.label }}
+                {{ form.middle_name() }}
+            </div>
+            <div class="form-group">
+                {{ form.incident_counter.label }}
+                {{ form.incident_counter() }}
+            </div>
+            <div class="form-group">{{ form.submit }}</div>
+                  </div>
+              </div>
+        </form>
+        <form action="{{ url_for('user.process_upload') }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="fileupload" id="fileToUpload">
+            <input type="submit" value="Upload File" name="submit">
+            </div>
+        </form>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-4"></div>
+    <div class="col-4">    
+    {% include 'messages.html' %}
+    </div>
+{% endblock %}
