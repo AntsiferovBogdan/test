@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row">
+<div class="col-3"></div>
+<div class="col-6">
+    {% for human in crime_list %}
+    <ul>
+    <li>{{ human }}</li>
+</ul>
+{% endfor %}
+</div>
+</div>
+{% endblock %}

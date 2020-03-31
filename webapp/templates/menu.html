@@ -13,6 +13,12 @@
         <li class="nav-item active">
           <a class="nav-link" href="{{ url_for('user.search', next=request.full_path) }}">Проверить клиента</a>
         </li> 
+        <li class="nav-item"></li>
+        <a class="nav-link" href="{{ url_for('user.registration', next=request.full_path) }}">Обновить базу данных</a>
+      </li> 
+      <li class="nav-item"></li>
+      <a class="nav-link" href="{{ url_for('user.wanted', next=request.full_path) }}">Потенциальные мошенники</a>
+    </li> 
       </ul>
     </div>
   </nav>

@@ -11,4 +11,4 @@ class Client(db.Model, UserMixin):
     incident_counter = db.Column(db.Integer)
 
     def __repr__(self):
-        return f'Количество инцидентов - {self.incident_counter}'
+        return f'{self.surname} {self.name} {self.middle_name}; \n Количество инцидентов - {self.incident_counter}'

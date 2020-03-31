@@ -3,7 +3,6 @@ from io import TextIOWrapper
 from webapp.db import db
 from webapp.user.forms import SearchForm, RegistrationForm
 from webapp.user.models import Client
-from webapp.utils import get_redirect_target
 
 import collections
 import csv
@@ -43,7 +42,11 @@ def process_registration():
 @blueprint.route('/process-upload', methods=['POST'])
 def process_upload():
     if request.method == 'POST':
-        f = request.files['fileupload']  #ALLOWED?!
+        f = request.files['fileupload']
+        file_format = f.filename.rsplit(".", 1)[1]  # прописал csv в html-форме,
+        if file_format != "csv":                    # но проверка лишней не бывает
+            flash('Неподдерживаемый формат базы данных.')
+            return redirect(url_for('user.registration'))
         f = TextIOWrapper(f, encoding="utf-8")
         reader = csv.reader(f)
         incidents_list = []
@@ -52,7 +55,6 @@ def process_upload():
             incidents_list.append(row[1])
             incidents_list.append(row[2])
         del incidents_list[0:2]
-        print(incidents_list)
         people_counter = collections.Counter()
 
         for people in incidents_list:
@@ -61,10 +63,8 @@ def process_upload():
         for people in people_counter:
             people = people[0].split(" ")
         people_counter = dict(people_counter)
-        print(people_counter)
 
         for people in people_counter.items():
-            print(people)
             full_name = people[0].split(" ")
             new_client = Client(surname=full_name[0],
                                 name=full_name[1],
@@ -96,3 +96,19 @@ def process_search():
         else:
             flash('Клиент отсутствует в базе данных')
             return redirect(url_for('user.search'))
+
+
+@blueprint.route('/wanted', methods=['GET'])
+def wanted():
+    page_title = "Потенциальные мошенники"
+    crime_clients = Client.query.filter(Client.incident_counter > 1).order_by(Client.incident_counter.desc())
+    if crime_clients:
+        crime_list = []
+        for client in crime_clients:
+            client = str(client)
+            crime_list.append(client)
+        return render_template("user/crime_clients.html", page_title=page_title,
+                               crime_list=crime_list)
+    else:
+        flash('У нас только добропорядочные клиенты')
+        return redirect(url_for('user.search'))
