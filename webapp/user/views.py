@@ -47,10 +47,10 @@ def process_upload():
         if file_format != "csv":                    # но проверка лишней не бывает
             flash('Неподдерживаемый формат базы данных.')
             return redirect(url_for('user.registration'))
-        f = TextIOWrapper(f, encoding="utf-8")
-        reader = csv.reader(f)
-        incidents_list = []
-        for row in reader:
+        f = TextIOWrapper(f, encoding="utf-8")  # у меня были проблемы
+        reader = csv.reader(f)                  # с кодировкой на mac
+        incidents_list = []                     # если что, используйте
+        for row in reader:                      # data_2.csv с гитхаба
             row = row[0].split(";")
             incidents_list.append(row[1])
             incidents_list.append(row[2])
