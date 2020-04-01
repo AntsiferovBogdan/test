@@ -9,6 +9,7 @@ class Client(db.Model, UserMixin):
     name = db.Column(db.String(24))
     middle_name = db.Column(db.String(48))
     incident_counter = db.Column(db.Integer)
+    crime_status = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return f'{self.surname} {self.name} {self.middle_name}; \n Количество инцидентов - {self.incident_counter}'

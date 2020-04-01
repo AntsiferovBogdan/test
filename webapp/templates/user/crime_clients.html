@@ -3,11 +3,23 @@
 {% block content %}
 
 <div class="row">
+    <div class="col-3"></div>
+    <div class="col-6">
+        <h2 align="center">Члены ОПГ</h2><br>
+        {% for client in syndicate_list %}
+        <ul>
+        <li>{{ client }}</li>
+    </ul>
+    {% endfor %}
+    </div>
+    </div>
+<div class="row">
 <div class="col-3"></div>
 <div class="col-6">
-    {% for human in crime_list %}
+    <h2 align="center">Потенциальные мошенники</h2><br>
+    {% for client in potential_list %}
     <ul>
-    <li>{{ human }}</li>
+    <li>{{ client }}</li>
 </ul>
 {% endfor %}
 </div>

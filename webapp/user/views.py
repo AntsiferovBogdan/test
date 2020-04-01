@@ -47,29 +47,53 @@ def process_upload():
         if file_format != "csv":                    # но проверка лишней не бывает
             flash('Неподдерживаемый формат базы данных.')
             return redirect(url_for('user.registration'))
-        f = TextIOWrapper(f, encoding="utf-8")  # у меня были проблемы
-        reader = csv.reader(f)                  # с кодировкой на mac
-        incidents_list = []                     # если что, используйте
-        for row in reader:                      # data_2.csv с гитхаба
+        f = TextIOWrapper(f, encoding="utf-8")
+        reader = csv.reader(f)
+        clients = []  # создаем список клиентов для подсчета инцидентов
+        pairs_list = []  # список пар участников каждого ДТП
+        for row in reader:
+            pair = []
             row = row[0].split(";")
-            incidents_list.append(row[1])
-            incidents_list.append(row[2])
-        del incidents_list[0:2]
-        people_counter = collections.Counter()
+            clients.append(row[1])
+            clients.append(row[2])
+            pair.append(row[1])
+            pair.append(row[2])
+            pairs_list.append(pair)
+        del clients[0:2]  # удаляем "Участник1", "Участник2"
+        clients_counter = collections.Counter()
+        for client in clients:
+            clients_counter[client] += 1
 
-        for people in incidents_list:
-            people_counter[people] += 1
+        for client in clients_counter:     # подсчитываем все имена в списке
+            client = client[0].split(" ")  # и формируем словарь типа
+        clients = dict(clients_counter)    # "Имя": "Кол-во ДТП"
 
-        for people in people_counter:
-            people = people[0].split(" ")
-        people_counter = dict(people_counter)
+        potential_crime = []                 # Люди с 1 ДТП являются
+        for key, value in clients.items():   # "тупиковой" вершиной графа,
+            if value > 1:                    # значит цепь не замкнется,
+                potential_crime.append(key)  # оставляем потенциальных
 
-        for people in people_counter.items():
-            full_name = people[0].split(" ")
+        nodes = []  # если в "паре" один из участников - тупиковая вершина,
+        edges = []  # убираем всю "пару". "Пара" будет ребром.
+        for pair in pairs_list:
+            if pair[0] in potential_crime and pair[1] in potential_crime:
+                nodes.append(pair[0])  # А мошенники - вершинами.
+                nodes.append(pair[1])
+                edges.append(pair)
+        print(nodes)
+        for client in clients.items():
+            if client[0] in nodes:
+                crime_status = 2
+            elif client[1] > 1:
+                crime_status = 1
+            else:
+                crime_status = 0
+            full_name = client[0].split(" ")
             new_client = Client(surname=full_name[0],
                                 name=full_name[1],
                                 middle_name=full_name[2],
-                                incident_counter=people[1])
+                                incident_counter=client[1],
+                                crime_status=crime_status)
             db.session.add(new_client)
             db.session.commit()
         flash('База данных обновлена')
@@ -100,15 +124,19 @@ def process_search():
 
 @blueprint.route('/wanted', methods=['GET'])
 def wanted():
-    page_title = "Потенциальные мошенники"
-    crime_clients = Client.query.filter(Client.incident_counter > 1).order_by(Client.incident_counter.desc())
-    if crime_clients:
-        crime_list = []
-        for client in crime_clients:
-            client = str(client)
-            crime_list.append(client)
+    page_title = "Черный список"
+    potential = Client.query.filter(Client.crime_status == 1).order_by(Client.incident_counter.desc())
+    syndicate = Client.query.filter(Client.crime_status == 2).order_by(Client.incident_counter.desc())
+    if potential or syndicate:
+        potential_list = []
+        syndicate_list = []
+        for client in potential:
+            potential_list.append(str(client))
+        for client in syndicate:
+            syndicate_list.append(str(client))
         return render_template("user/crime_clients.html", page_title=page_title,
-                               crime_list=crime_list)
+                               potential_list=potential_list,
+                               syndicate_list=syndicate_list)
     else:
         flash('У нас только добропорядочные клиенты')
         return redirect(url_for('user.search'))
